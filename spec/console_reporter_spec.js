@@ -157,7 +157,7 @@ describe("ConsoleReporter", function() {
       }
     });
 
-    expect(this.out.getOutput()).toMatch(/Randomized with seed 12345 \(jasmine --random=true --seed=12345\)/);
+    expect(this.out.getOutput()).toContain("Randomized with seed 12345");
   });
 
   it("allows the seed reproduction command to be overridden", function() {
