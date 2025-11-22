@@ -15,9 +15,9 @@
 	 "reporter"
   ],
   "scripts": {
-    "posttest": "eslint index.js \"lib/**/*.js\" \"spec/**/*.js\" && prettier --check index.js \"lib/**/*.js\" \"spec/**/*.js\"",
+    "posttest": "prettier --check index.js \"lib/**/*.js\" \"spec/**/*.js\"",
     "test": "jasmine",
-    "cleanup": "prettier --write \"src/**/*.js\" \"spec/**/*.js\""
+    "cleanup": "prettier --write index.js \"lib/**/*.js\" \"spec/**/*.js\""
   },
   "description": "Reporters for the Jasmine testing framework",
   "homepage": "https://jasmine.github.io",
@@ -42,5 +42,9 @@
     "Firefox >= 102",
     "last 2 Chrome versions",
     "last 2 Edge versions"
-  ]
+  ],
+  "prettier": {
+    "singleQuote": true,
+    "trailingComma": "es5"
+  }
 }
