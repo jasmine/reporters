@@ -60,6 +60,7 @@ export default defineConfig([
       'no-tabs': 'error',
       'no-trailing-spaces': 'error',
       'no-whitespace-before-property': 'error',
+      'prefer-const': 'error',
       semi: ['error', 'always'],
       'space-before-blocks': 'error',
       'no-console': 'off',
