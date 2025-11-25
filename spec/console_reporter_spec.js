@@ -80,24 +80,52 @@ describe('ConsoleReporter', function() {
     expect(this.out.getOutput()).toContain('hello world');
   });
 
-  it('reports a passing spec as a dot', function() {
-    reporter.specDone({ status: 'passed' });
-    expect(this.out.getOutput()).toEqual('\x1B[32m.\x1B[0m');
-  });
-
   it('does not report a disabled spec', function() {
     reporter.specDone({ status: 'disabled' });
     expect(this.out.getOutput()).toEqual('');
   });
 
-  it("reports a failing spec as an 'F'", function() {
-    reporter.specDone({ status: 'failed' });
-    expect(this.out.getOutput()).toEqual('\x1B[31mF\x1B[0m');
+  describe('With color', function() {
+    it('reports a passing spec as a colorized dot', function() {
+      reporter.specDone({ status: 'passed' });
+      expect(this.out.getOutput()).toEqual('\x1B[32m.\x1B[0m');
+    });
+
+    it("reports a failing spec as a colorized 'F'", function() {
+      reporter.specDone({ status: 'failed' });
+      expect(this.out.getOutput()).toEqual('\x1B[31mF\x1B[0m');
+    });
+
+    it("reports a pending spec as a colorized '*'", function() {
+      reporter.specDone({ status: 'pending' });
+      expect(this.out.getOutput()).toEqual('\x1B[33m*\x1B[0m');
+    });
   });
 
-  it("reports a pending spec as a '*'", function() {
-    reporter.specDone({ status: 'pending' });
-    expect(this.out.getOutput()).toEqual('\x1B[33m*\x1B[0m');
+  describe('without color', function() {
+    it('reports a passing spec as a dot', function() {
+      reporter.configure({ color: false });
+
+      reporter.specDone({ status: 'passed' });
+
+      expect(this.out.getOutput()).toEqual('.');
+    });
+
+    it("reports a failing spec as an 'F'", function() {
+      reporter.configure({ color: false });
+
+      reporter.specDone({ status: 'failed' });
+
+      expect(this.out.getOutput()).toEqual('F');
+    });
+
+    it("reports a pending spec as a '*'", function() {
+      reporter.configure({ color: false });
+
+      reporter.specDone({ status: 'pending' });
+
+      expect(this.out.getOutput()).toEqual('*');
+    });
   });
 
   it('alerts user if there are no specs', function() {
@@ -573,47 +601,5 @@ describe('ConsoleReporter', function() {
     expect(this.out.getOutput()).toMatch(
       /Suite error: top suite\s+Message:\s+Global Exception/
     );
-  });
-
-  describe('without color', function() {
-    it('reports that the suite has started to the console', function() {
-      reporter.configure({ color: false });
-
-      reporter.jasmineStarted();
-
-      expect(this.out.getOutput()).toEqual('Started\n');
-    });
-
-    it('reports a passing spec as a dot', function() {
-      reporter.configure({ color: false });
-
-      reporter.specDone({ status: 'passed' });
-
-      expect(this.out.getOutput()).toEqual('.');
-    });
-
-    it('does not report a disabled spec', function() {
-      reporter.configure({ color: false });
-
-      reporter.specDone({ status: 'disabled' });
-
-      expect(this.out.getOutput()).toEqual('');
-    });
-
-    it("reports a failing spec as an 'F'", function() {
-      reporter.configure({ color: false });
-
-      reporter.specDone({ status: 'failed' });
-
-      expect(this.out.getOutput()).toEqual('F');
-    });
-
-    it("reports a pending spec as a '*'", function() {
-      reporter.configure({ color: false });
-
-      reporter.specDone({ status: 'pending' });
-
-      expect(this.out.getOutput()).toEqual('*');
-    });
   });
 });
