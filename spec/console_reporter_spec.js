@@ -55,8 +55,8 @@ describe('ConsoleReporter', function() {
     });
   });
 
-  it('setOptions should not override existing options if set multiple times', function() {
-    reporter.setOptions({
+  it('configure should not override existing options if set multiple times', function() {
+    reporter.configure({
       color: false,
       randomSeedReproductionCmd() {
         return 'hello world';
@@ -72,7 +72,7 @@ describe('ConsoleReporter', function() {
 
     // set options that does not include randomSeedReproductionCmd,
     // should not clear randomSeedReproductionCmd
-    reporter.setOptions({ color: true });
+    reporter.configure({ color: true });
 
     reporter.jasmineDone({
       order: { random: true, seed: '12345' },
@@ -120,7 +120,7 @@ describe('ConsoleReporter', function() {
   });
 
   it('allows the seed reproduction command to be specified', function() {
-    reporter.setOptions({
+    reporter.configure({
       randomSeedReproductionCmd: function(seed) {
         return `jasmine-some-other-tool --randomSeed=${seed}`;
       },
@@ -307,7 +307,7 @@ describe('ConsoleReporter', function() {
     const customStackFilter = function(stack) {
       return stackLine;
     };
-    reporter.setOptions({ stackFilter: customStackFilter });
+    reporter.configure({ stackFilter: customStackFilter });
 
     reporter.jasmineStarted();
     reporter.specDone({ status: 'passed' });
@@ -337,7 +337,7 @@ describe('ConsoleReporter', function() {
 
   describe('When the overall status is passed', function() {
     it('includes pending specs in the summary even if alwaysListPendingSpecs is false', function() {
-      reporter.setOptions({ alwaysListPendingSpecs: false });
+      reporter.configure({ alwaysListPendingSpecs: false });
 
       reporter.jasmineStarted();
 
@@ -360,7 +360,7 @@ describe('ConsoleReporter', function() {
 
   describe('When the overall status is failed', function() {
     it('includes pending specs in the summary when alwaysListPendingSpecs is true', function() {
-      reporter.setOptions({ alwaysListPendingSpecs: true });
+      reporter.configure({ alwaysListPendingSpecs: true });
 
       reporter.jasmineStarted();
 
@@ -381,7 +381,7 @@ describe('ConsoleReporter', function() {
     });
 
     it('omits pending specs in the summary when alwaysListPendingSpecs is false', function() {
-      reporter.setOptions({ alwaysListPendingSpecs: false });
+      reporter.configure({ alwaysListPendingSpecs: false });
 
       reporter.jasmineStarted();
 
@@ -550,7 +550,7 @@ describe('ConsoleReporter', function() {
   });
 
   it('displays all afterAll exceptions', function() {
-    reporter.setOptions({ color: false });
+    reporter.configure({ color: false });
 
     reporter.suiteDone({
       fullName: 'suite 1',
@@ -577,7 +577,7 @@ describe('ConsoleReporter', function() {
 
   describe('without color', function() {
     it('reports that the suite has started to the console', function() {
-      reporter.setOptions({ color: false });
+      reporter.configure({ color: false });
 
       reporter.jasmineStarted();
 
@@ -585,7 +585,7 @@ describe('ConsoleReporter', function() {
     });
 
     it('reports a passing spec as a dot', function() {
-      reporter.setOptions({ color: false });
+      reporter.configure({ color: false });
 
       reporter.specDone({ status: 'passed' });
 
@@ -593,7 +593,7 @@ describe('ConsoleReporter', function() {
     });
 
     it('does not report a disabled spec', function() {
-      reporter.setOptions({ color: false });
+      reporter.configure({ color: false });
 
       reporter.specDone({ status: 'disabled' });
 
@@ -601,7 +601,7 @@ describe('ConsoleReporter', function() {
     });
 
     it("reports a failing spec as an 'F'", function() {
-      reporter.setOptions({ color: false });
+      reporter.configure({ color: false });
 
       reporter.specDone({ status: 'failed' });
 
@@ -609,7 +609,7 @@ describe('ConsoleReporter', function() {
     });
 
     it("reports a pending spec as a '*'", function() {
-      reporter.setOptions({ color: false });
+      reporter.configure({ color: false });
 
       reporter.specDone({ status: 'pending' });
 
