@@ -24,6 +24,20 @@ describe('ConsoleReporter', function() {
         write: this.out.print,
       },
     });
+
+    jasmine.addCustomObjectFormatter(function(obj) {
+      if (typeof obj === 'string') {
+        return unescapeAnsi(obj);
+      }
+    });
+
+    function unescapeAnsi(s) {
+      return s
+        .replaceAll('\x1B[32m', '\\x1B[32m') // green
+        .replaceAll('\x1B[31m', '\\x1B[31m') // red
+        .replaceAll('\x1B[33m', '\\x1B[33m') // yellow
+        .replaceAll('\x1B[0m', '\\x1B[0m'); // no color
+    }
   });
 
   it('reports that the suite has started to the console', function() {
