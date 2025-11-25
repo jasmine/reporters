@@ -622,22 +622,32 @@ describe('ConsoleReporter', function() {
   });
 
   describe('Whether to colorize', function() {
-    // Configuration takes precedence over isTTY.
+    // Configuration takes precedence over NO_COLOR,
+    // which takes precedence over isTTY.
     const scenarios = [
-      { config: undefined, isTTY: true, expected: true },
-      { config: undefined, isTTY: false, expected: false },
-      { config: true, isTTY: true, expected: true },
-      { config: true, isTTY: false, expected: true },
-      { config: false, isTTY: true, expected: false },
-      { config: false, isTTY: false, expected: false },
+      { config: undefined, isTTY: true, nocolorSet: false, expected: true },
+      { config: undefined, isTTY: false, nocolorSet: false, expected: false },
+      { config: true, isTTY: true, nocolorSet: false, expected: true },
+      { config: true, isTTY: false, nocolorSet: false, expected: true },
+      { config: false, isTTY: true, nocolorSet: false, expected: false },
+      { config: false, isTTY: false, nocolorSet: false, expected: false },
+
+      { config: undefined, isTTY: true, nocolorSet: true, expected: false },
+      { config: undefined, isTTY: false, nocolorSet: true, expected: false },
+      { config: true, isTTY: true, nocolorSet: true, expected: true },
+      { config: true, isTTY: false, nocolorSet: true, expected: true },
+      { config: false, isTTY: true, nocolorSet: true, expected: false },
+      { config: false, isTTY: false, nocolorSet: true, expected: false },
     ];
 
-    for (const { config, isTTY, expected } of scenarios) {
+    for (const { config, isTTY, nocolorSet, expected } of scenarios) {
       const isTTYDesc = isTTY ? 'stdout is a TTY' : "stdout isn't a TTY";
+      const noColorDesc = nocolorSet ? 'NO_COLOR is set' : "NO_COLOR isn't set";
 
-      describe(`When showColors is ${config} and ${isTTYDesc}`, function() {
+      describe(`When showColors is ${config}, ${noColorDesc} and ${isTTYDesc}`, function() {
         beforeEach(function() {
           reporter = new ConsoleReporter({
+            env: { NO_COLOR: nocolorSet ? 'not the empty string' : '' },
             stdout: {
               isTTY,
               write: this.out.print,
