@@ -100,6 +100,10 @@ describe('ConsoleReporter', function() {
   });
 
   describe('With color', function() {
+    beforeEach(function() {
+      reporter.configure({ color: true });
+    });
+
     it('reports a passing spec as a colorized dot', function() {
       reporter.specDone({ status: 'passed' });
       expect(this.out.getOutput()).toEqual('\x1B[32m.\x1B[0m');
@@ -615,5 +619,45 @@ describe('ConsoleReporter', function() {
     expect(this.out.getOutput()).toMatch(
       /Suite error: top suite\s+Message:\s+Global Exception/
     );
+  });
+
+  describe('Whether to colorize', function() {
+    // Configuration takes precedence over isTTY.
+    const scenarios = [
+      { config: undefined, isTTY: true, expected: true },
+      { config: undefined, isTTY: false, expected: false },
+      { config: true, isTTY: true, expected: true },
+      { config: true, isTTY: false, expected: true },
+      { config: false, isTTY: true, expected: false },
+      { config: false, isTTY: false, expected: false },
+    ];
+
+    for (const { config, isTTY, expected } of scenarios) {
+      const isTTYDesc = isTTY ? 'stdout is a TTY' : "stdout isn't a TTY";
+
+      describe(`When showColors is ${config} and ${isTTYDesc}`, function() {
+        beforeEach(function() {
+          reporter = new ConsoleReporter({
+            stdout: {
+              isTTY,
+              write: this.out.print,
+            },
+          });
+          reporter.configure({ color: config });
+        });
+
+        if (expected) {
+          it('colorizes', function() {
+            reporter.specDone({ status: 'passed' });
+            expect(this.out.getOutput()).toEqual('\x1B[32m.\x1B[0m');
+          });
+        } else {
+          it("doesn't colorize", function() {
+            reporter.specDone({ status: 'passed' });
+            expect(this.out.getOutput()).toEqual('.');
+          });
+        }
+      });
+    }
   });
 });
