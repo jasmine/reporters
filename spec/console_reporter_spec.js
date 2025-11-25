@@ -1,6 +1,8 @@
 const ConsoleReporter = require('../lib/console_reporter');
 
 describe('ConsoleReporter', function() {
+  let reporter;
+
   beforeEach(function() {
     this.out = (function() {
       let output = '';
@@ -16,15 +18,15 @@ describe('ConsoleReporter', function() {
         },
       };
     })();
+
+    reporter = new ConsoleReporter({
+      stdout: {
+        write: this.out.print,
+      },
+    });
   });
 
   it('reports that the suite has started to the console', function() {
-    const reporter = new ConsoleReporter();
-
-    reporter.setOptions({
-      print: this.out.print,
-    });
-
     reporter.jasmineStarted();
 
     expect(this.out.getOutput()).toEqual('Started\n');
@@ -32,11 +34,6 @@ describe('ConsoleReporter', function() {
 
   describe('When order information is passed to jasmineStarted', function() {
     it('reports the seed number when randomized', function() {
-      const reporter = new ConsoleReporter();
-      reporter.setOptions({
-        print: this.out.print,
-      });
-
       reporter.jasmineStarted({
         order: {
           random: true,
@@ -48,11 +45,6 @@ describe('ConsoleReporter', function() {
     });
 
     it('does not report order info when not randomized', function() {
-      const reporter = new ConsoleReporter();
-      reporter.setOptions({
-        print: this.out.print,
-      });
-
       reporter.jasmineStarted({
         order: {
           random: false,
@@ -64,11 +56,11 @@ describe('ConsoleReporter', function() {
   });
 
   it('setOptions should not override existing options if set multiple times', function() {
-    const reporter = new ConsoleReporter();
-
     reporter.setOptions({
-      print: this.out.print,
       color: false,
+      randomSeedReproductionCmd() {
+        return 'hello world';
+      },
     });
 
     reporter.jasmineStarted();
@@ -78,65 +70,37 @@ describe('ConsoleReporter', function() {
     this.out.clear();
     expect(this.out.getOutput()).toEqual('');
 
-    // set options that does not include print, should still print with this.out.print
-    reporter.setOptions({
-      color: true,
-    });
+    // set options that does not include randomSeedReproductionCmd,
+    // should not clear randomSeedReproductionCmd
+    reporter.setOptions({ color: true });
 
-    reporter.jasmineStarted();
-    expect(this.out.getOutput()).toEqual('Started\n');
+    reporter.jasmineDone({
+      order: { random: true, seed: '12345' },
+    });
+    expect(this.out.getOutput()).toContain('hello world');
   });
 
   it('reports a passing spec as a dot', function() {
-    const reporter = new ConsoleReporter();
-    reporter.setOptions({
-      print: this.out.print,
-    });
-
     reporter.specDone({ status: 'passed' });
-
     expect(this.out.getOutput()).toEqual('\x1B[32m.\x1B[0m');
   });
 
   it('does not report a disabled spec', function() {
-    const reporter = new ConsoleReporter();
-    reporter.setOptions({
-      print: this.out.print,
-    });
-
     reporter.specDone({ status: 'disabled' });
-
     expect(this.out.getOutput()).toEqual('');
   });
 
   it("reports a failing spec as an 'F'", function() {
-    const reporter = new ConsoleReporter();
-    reporter.setOptions({
-      print: this.out.print,
-    });
-
     reporter.specDone({ status: 'failed' });
-
     expect(this.out.getOutput()).toEqual('\x1B[31mF\x1B[0m');
   });
 
   it("reports a pending spec as a '*'", function() {
-    const reporter = new ConsoleReporter();
-    reporter.setOptions({
-      print: this.out.print,
-    });
-
     reporter.specDone({ status: 'pending' });
-
     expect(this.out.getOutput()).toEqual('\x1B[33m*\x1B[0m');
   });
 
   it('alerts user if there are no specs', function() {
-    const reporter = new ConsoleReporter();
-    reporter.setOptions({
-      print: this.out.print,
-    });
-
     reporter.jasmineStarted();
     this.out.clear();
     reporter.jasmineDone({});
@@ -145,11 +109,6 @@ describe('ConsoleReporter', function() {
   });
 
   it('reports the seed number when running in random order', function() {
-    const reporter = new ConsoleReporter();
-    reporter.setOptions({
-      print: this.out.print,
-    });
-
     reporter.jasmineDone({
       order: {
         random: true,
@@ -160,10 +119,8 @@ describe('ConsoleReporter', function() {
     expect(this.out.getOutput()).toContain('Randomized with seed 12345');
   });
 
-  it('allows the seed reproduction command to be overridden', function() {
-    const reporter = new ConsoleReporter('jasmine-some-other-tool');
+  it('allows the seed reproduction command to be specified', function() {
     reporter.setOptions({
-      print: this.out.print,
       randomSeedReproductionCmd: function(seed) {
         return `jasmine-some-other-tool --randomSeed=${seed}`;
       },
@@ -182,11 +139,6 @@ describe('ConsoleReporter', function() {
   });
 
   it('reports a summary when done (singular spec and time)', function() {
-    const reporter = new ConsoleReporter();
-    reporter.setOptions({
-      print: this.out.print,
-    });
-
     reporter.jasmineStarted();
     reporter.specDone({ status: 'passed' });
 
@@ -200,11 +152,6 @@ describe('ConsoleReporter', function() {
   });
 
   it('reports a summary when done (pluralized specs and seconds)', function() {
-    const reporter = new ConsoleReporter();
-    reporter.setOptions({
-      print: this.out.print,
-    });
-
     reporter.jasmineStarted();
     reporter.specDone({ status: 'passed' });
     reporter.specDone({ status: 'pending' });
@@ -233,11 +180,6 @@ describe('ConsoleReporter', function() {
   });
 
   it('counts failures that are reported in the jasmineDone event', function() {
-    const reporter = new ConsoleReporter();
-    reporter.setOptions({
-      print: this.out.print,
-    });
-
     reporter.jasmineStarted();
     reporter.specDone({
       status: 'failed',
@@ -269,11 +211,6 @@ describe('ConsoleReporter', function() {
   });
 
   it("reports a summary when done that indicates the number of specs run (when it's less that the full number of specs)", function() {
-    const reporter = new ConsoleReporter();
-    reporter.setOptions({
-      print: this.out.print,
-    });
-
     reporter.jasmineStarted();
     reporter.specDone({ status: 'passed' });
     reporter.specDone({ status: 'disabled' });
@@ -286,11 +223,6 @@ describe('ConsoleReporter', function() {
   });
 
   it('reports a summary when done that includes the failed spec number before the full name of a failing spec', function() {
-    const reporter = new ConsoleReporter();
-    reporter.setOptions({
-      print: this.out.print,
-    });
-
     reporter.jasmineStarted();
     reporter.specDone({ status: 'passed' });
     reporter.specDone({
@@ -317,11 +249,6 @@ describe('ConsoleReporter', function() {
   });
 
   it('reports a summary when done that includes stack traces for a failing suite', function() {
-    const reporter = new ConsoleReporter();
-    reporter.setOptions({
-      print: this.out.print,
-    });
-
     reporter.jasmineStarted();
     reporter.specDone({ status: 'passed' });
     reporter.specDone({
@@ -350,11 +277,6 @@ describe('ConsoleReporter', function() {
   });
 
   it('reports a summary when done in case that stack is somehow undefined', function() {
-    const reporter = new ConsoleReporter();
-    reporter.setOptions({
-      print: this.out.print,
-    });
-
     reporter.jasmineStarted();
     reporter.specDone({ status: 'passed' });
     reporter.specDone({
@@ -385,11 +307,7 @@ describe('ConsoleReporter', function() {
     const customStackFilter = function(stack) {
       return stackLine;
     };
-    const reporter = new ConsoleReporter();
-    reporter.setOptions({
-      print: this.out.print,
-      stackFilter: customStackFilter,
-    });
+    reporter.setOptions({ stackFilter: customStackFilter });
 
     reporter.jasmineStarted();
     reporter.specDone({ status: 'passed' });
@@ -419,11 +337,7 @@ describe('ConsoleReporter', function() {
 
   describe('When the overall status is passed', function() {
     it('includes pending specs in the summary even if alwaysListPendingSpecs is false', function() {
-      const reporter = new ConsoleReporter();
-      reporter.setOptions({
-        print: this.out.print,
-        alwaysListPendingSpecs: false,
-      });
+      reporter.setOptions({ alwaysListPendingSpecs: false });
 
       reporter.jasmineStarted();
 
@@ -446,11 +360,7 @@ describe('ConsoleReporter', function() {
 
   describe('When the overall status is failed', function() {
     it('includes pending specs in the summary when alwaysListPendingSpecs is true', function() {
-      const reporter = new ConsoleReporter();
-      reporter.setOptions({
-        print: this.out.print,
-        alwaysListPendingSpecs: true,
-      });
+      reporter.setOptions({ alwaysListPendingSpecs: true });
 
       reporter.jasmineStarted();
 
@@ -471,11 +381,7 @@ describe('ConsoleReporter', function() {
     });
 
     it('omits pending specs in the summary when alwaysListPendingSpecs is false', function() {
-      const reporter = new ConsoleReporter();
-      reporter.setOptions({
-        print: this.out.print,
-        alwaysListPendingSpecs: false,
-      });
+      reporter.setOptions({ alwaysListPendingSpecs: false });
 
       reporter.jasmineStarted();
 
@@ -496,11 +402,6 @@ describe('ConsoleReporter', function() {
     });
 
     it('includes pending specs in the summary when alwaysListPendingSpecs is unspecified', function() {
-      const reporter = new ConsoleReporter();
-      reporter.setOptions({
-        print: this.out.print,
-      });
-
       reporter.jasmineStarted();
 
       reporter.specDone({
@@ -521,11 +422,6 @@ describe('ConsoleReporter', function() {
   });
 
   it('reports a summary when done that includes the reason for an incomplete suite', function() {
-    const reporter = new ConsoleReporter();
-    reporter.setOptions({
-      print: this.out.print,
-    });
-
     reporter.jasmineStarted();
 
     this.out.clear();
@@ -541,11 +437,6 @@ describe('ConsoleReporter', function() {
   });
 
   it('reports a summary when done that shows info for a failed spec with no expectations', function() {
-    const reporter = new ConsoleReporter();
-    reporter.setOptions({
-      print: this.out.print,
-    });
-
     reporter.jasmineStarted();
     reporter.specDone({ status: 'passed' });
     reporter.specDone({
@@ -564,11 +455,6 @@ describe('ConsoleReporter', function() {
   });
 
   it('reports a summary without "no expectations" message for a spec having failed expectations', function() {
-    const reporter = new ConsoleReporter();
-    reporter.setOptions({
-      print: this.out.print,
-    });
-
     reporter.jasmineStarted();
     reporter.specDone({
       status: 'failed',
@@ -594,11 +480,6 @@ describe('ConsoleReporter', function() {
   });
 
   it('reports a summary with debug log info for a failed spec with debug logs', function() {
-    const reporter = new ConsoleReporter();
-    reporter.setOptions({
-      print: this.out.print,
-    });
-
     reporter.jasmineStarted();
     reporter.specDone({
       status: 'failed',
@@ -619,11 +500,6 @@ describe('ConsoleReporter', function() {
   });
 
   it('reports a summary without a "no expectations" message for a spec having passed expectations', function() {
-    const reporter = new ConsoleReporter();
-    reporter.setOptions({
-      print: this.out.print,
-    });
-
     reporter.jasmineStarted();
     reporter.specDone({
       status: 'passed',
@@ -662,37 +538,19 @@ describe('ConsoleReporter', function() {
   });
 
   it('reports a summary for a parallel run', function() {
-    const reporter = new ConsoleReporter();
-    reporter.setOptions({
-      print: this.out.print,
-    });
-
-    reporter.jasmineDone({
-      numWorkers: 3,
-    });
+    reporter.jasmineDone({ numWorkers: 3 });
 
     expect(this.out.getOutput()).toContain('Ran in parallel with 3 workers\n');
   });
 
   it('does not report non-parallel runs as parallel', function() {
-    const reporter = new ConsoleReporter();
-    reporter.setOptions({
-      print: this.out.print,
-    });
-
-    reporter.jasmineDone({
-      numWorkers: undefined,
-    });
+    reporter.jasmineDone({ numWorkers: undefined });
 
     expect(this.out.getOutput()).not.toContain('Ran in parallel');
   });
 
   it('displays all afterAll exceptions', function() {
-    const reporter = new ConsoleReporter();
-    reporter.setOptions({
-      print: this.out.print,
-      color: false,
-    });
+    reporter.setOptions({ color: false });
 
     reporter.suiteDone({
       fullName: 'suite 1',
@@ -719,11 +577,7 @@ describe('ConsoleReporter', function() {
 
   describe('without color', function() {
     it('reports that the suite has started to the console', function() {
-      const reporter = new ConsoleReporter();
-      reporter.setOptions({
-        print: this.out.print,
-        color: false,
-      });
+      reporter.setOptions({ color: false });
 
       reporter.jasmineStarted();
 
@@ -731,11 +585,7 @@ describe('ConsoleReporter', function() {
     });
 
     it('reports a passing spec as a dot', function() {
-      const reporter = new ConsoleReporter();
-      reporter.setOptions({
-        print: this.out.print,
-        color: false,
-      });
+      reporter.setOptions({ color: false });
 
       reporter.specDone({ status: 'passed' });
 
@@ -743,11 +593,7 @@ describe('ConsoleReporter', function() {
     });
 
     it('does not report a disabled spec', function() {
-      const reporter = new ConsoleReporter();
-      reporter.setOptions({
-        print: this.out.print,
-        color: false,
-      });
+      reporter.setOptions({ color: false });
 
       reporter.specDone({ status: 'disabled' });
 
@@ -755,11 +601,7 @@ describe('ConsoleReporter', function() {
     });
 
     it("reports a failing spec as an 'F'", function() {
-      const reporter = new ConsoleReporter();
-      reporter.setOptions({
-        print: this.out.print,
-        color: false,
-      });
+      reporter.setOptions({ color: false });
 
       reporter.specDone({ status: 'failed' });
 
@@ -767,11 +609,7 @@ describe('ConsoleReporter', function() {
     });
 
     it("reports a pending spec as a '*'", function() {
-      const reporter = new ConsoleReporter();
-      reporter.setOptions({
-        print: this.out.print,
-        color: false,
-      });
+      reporter.setOptions({ color: false });
 
       reporter.specDone({ status: 'pending' });
 
