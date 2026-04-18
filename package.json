@@ -15,8 +15,8 @@
     "reporter"
   ],
   "scripts": {
-    "posttest": "eslint && prettier --check index.js \"lib/**/*.js\" \"spec/**/*.js\"",
-    "test": "jasmine",
+    "lint": "eslint && prettier --check index.js \"lib/**/*.js\" \"spec/**/*.js\"",
+    "test": "jasmine && npm run lint",
     "cleanup": "prettier --write index.js \"lib/**/*.js\" \"spec/**/*.js\""
   },
   "description": "Reporters for the Jasmine testing framework",
