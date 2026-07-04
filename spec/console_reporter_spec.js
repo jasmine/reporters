@@ -197,6 +197,32 @@ describe('ConsoleReporter', function() {
     expect(this.out.getOutput()).toMatch('Finished in 1 second\n');
   });
 
+  it('includes notApplicable specs in the summary', function() {
+    reporter.jasmineStarted();
+    reporter.specDone({ status: 'passed' });
+    reporter.specDone({
+      status: 'notApplicable',
+      notApplicableReason: 'only runs in browsers',
+    });
+    reporter.specDone({
+      status: 'notApplicable',
+      notApplicableReason: 'requires a 36 bit CPU',
+    });
+    reporter.specDone({
+      status: 'notApplicable',
+      notApplicableReason: 'only runs in browsers',
+    });
+    this.out.clear();
+    reporter.jasmineDone({});
+
+    expect(this.out.getOutput()).toContain(
+      '\n2 specs not applicable because: only runs in browsers\n'
+    );
+    expect(this.out.getOutput()).toContain(
+      '\n1 spec not applicable because: requires a 36 bit CPU\n'
+    );
+  });
+
   it('reports a summary when done (pluralized specs and seconds)', function() {
     reporter.jasmineStarted();
     reporter.specDone({ status: 'passed' });
