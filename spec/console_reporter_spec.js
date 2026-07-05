@@ -223,6 +223,55 @@ describe('ConsoleReporter', function() {
     );
   });
 
+  describe('When listNotApplicableSpecs is true', function() {
+    it('lists each notApplicable spec', function() {
+      reporter.configure({ listNotApplicableSpecs: true });
+      reporter.jasmineStarted();
+      reporter.specDone({ status: 'passed' });
+      reporter.specDone({
+        status: 'notApplicable',
+        fullName: 'spec 1',
+        notApplicableReason: 'only runs in browsers',
+      });
+      reporter.specDone({
+        status: 'notApplicable',
+        fullName: 'spec 2',
+        notApplicableReason: 'only runs in browsers',
+      });
+      this.out.clear();
+      reporter.jasmineDone({});
+
+      expect(this.out.getOutput()).toContain(
+        '2 specs not applicable because: only runs in browsers\n' +
+          '   * spec 1\n' +
+          '   * spec 2\n'
+      );
+    });
+  });
+
+  describe('When listNotApplicableSpecs is false', function() {
+    it('does not list each notApplicable spec', function() {
+      reporter.configure({ listNotApplicableSpecs: false });
+      reporter.jasmineStarted();
+      reporter.specDone({ status: 'passed' });
+      reporter.specDone({
+        status: 'notApplicable',
+        fullName: 'spec 1',
+        notApplicableReason: 'only runs in browsers',
+      });
+      reporter.specDone({
+        status: 'notApplicable',
+        fullName: 'spec 2',
+        notApplicableReason: 'only runs in browsers',
+      });
+      this.out.clear();
+      reporter.jasmineDone({});
+
+      expect(this.out.getOutput()).not.toContain('spec 1');
+      expect(this.out.getOutput()).not.toContain('spec 2');
+    });
+  });
+
   it('reports a summary when done (pluralized specs and seconds)', function() {
     reporter.jasmineStarted();
     reporter.specDone({ status: 'passed' });
