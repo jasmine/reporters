@@ -39,7 +39,7 @@
     "eslint": "^9.24.0",
     "eslint-plugin-compat": "^6.0.2",
     "eslint-plugin-jasmine": "^4.2.2",
-    "jasmine": "github:jasmine/jasmine-npm#6.0",
+    "jasmine": "github:jasmine/jasmine-npm#main",
     "prettier": "1.17.1"
   },
   "browserslist": [
