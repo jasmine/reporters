@@ -17,7 +17,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node-version: [20.x, 22.x, 24.x]
+        node-version: [20.0, 22.0, 24.0]
 
     steps:
     - uses: actions/checkout@v7
@@ -26,5 +26,7 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
+    - name: Report Node and NPM versions
+      run: echo Using Node $(node --version) and NPM $(npm --version)
     - run: npm install
     - run: npm test
