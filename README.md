@@ -18,8 +18,12 @@ jasmine.getEnv().addReporter(reporter);
 
 ## Node version compatibility
 
-20, 22, 24
+20*, 22, 24, 26
+
+\* Environments that are past end of life are supported on a best-effort basis.
+They may be dropped in a future minor release of Jasmine if continued support
+becomes impractical.
 
 Copyright (c) 2011-2019 Pivotal Labs<br>
-Copyright (c) 2011-2025 The Jasmine developers<br>
+Copyright (c) 2011-2026 The Jasmine developers<br>
 This software is licensed under the MIT License.

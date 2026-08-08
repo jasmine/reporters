@@ -17,7 +17,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node-version: [20.0, 22.0, 24.0]
+        node-version: [20.0, 22.0, 24.0, 26.0]
 
     steps:
     - uses: actions/checkout@v7
@@ -27,20 +27,29 @@ jobs:
         node-version: ${{ matrix.node-version }}
         package-manager-cache: false
 
-    - name: Report Node and NPM versions
-      run: echo Using Node $(node --version) and NPM $(npm --version)
-
-    # This project's .npmrc requires NPM 12.
+    # jasmine-core's .npmrc requires NPM 12. Upgrade NPM if possible,
+    # or delete .npmrc.
     # We can't reliably install NPM 12 on anything before Node 26:
     # * NPM 12 won't run on any Node 20 version, or on older 22 and
     #   24 minors.
     # * npm install -g fails on cimg/node:24.* due to permissions.
     # Removing .npmrc theoretically leaves CI vulnerable to supply
     # chain attacks, but CI produces no artifacts and has no access
-    # to credentials (except for the Saucelabs API key, and that's
-    # only provided to trusted invocations.)
-    - name: Remove .npmrc
-      run: rm .npmrc
+    # to credentials.
+    - name: Update npm or delete .npmrc
+      run: |
+        # Note: this check may cause spurious warnings about invalid npm
+        # settings. npm 11 validates .npmrc even when you just run --version.
+        if [ $(npm --version | sed 's/\..*//') -lt 12 ]; then
+          if [ $(node --version | sed -e 's/\..*//' -e 's/^v//') -ge 26 ]; then
+            npm install -g npm@latest
+          else
+            rm .npmrc
+          fi
+        fi
+
+    - name: Report Node and NPM versions
+      run: echo Using Node $(node --version) and NPM $(npm --version)
 
     - run: npm install
     - run: npm test
