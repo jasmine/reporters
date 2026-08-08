@@ -246,6 +246,7 @@ describe('ConsoleReporter', function() {
           '   * spec 1\n' +
           '   * spec 2\n'
       );
+      expect(1).toBe(2);
     });
   });
 
